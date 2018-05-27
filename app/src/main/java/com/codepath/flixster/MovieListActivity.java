@@ -1,7 +1,9 @@
 package com.codepath.flixster;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -14,14 +16,16 @@ import cz.msebera.android.httpclient.Header;
 public class MovieListActivity extends AppCompatActivity {
 
     //base url for api
-    public static final String API_BASE_URL = "https://api.themoviedb.org/3";
+    public final static String API_BASE_URL = "https://api.themoviedb.org/3";
 
     //parameter name for API
-    public static final String API_KEY_PARAM = "api_key";
+    public final static String API_KEY_PARAM = "api_key";
 
     //api key
-    public static final String API_KEY_= "a07e22bc18f5cb106bfe4cc1f83ad8ed";
+    public final static String API_KEY_= "a07e22bc18f5cb106bfe4cc1f83ad8ed";
 
+    //tag
+    public final static String TAG = "MovieListActivity";
 
     //assistant fields
     AsyncHttpClient client;
@@ -50,11 +54,19 @@ public class MovieListActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                super.onFailure(statusCode, headers, responseString, throwable);
+//                super.onFailure(statusCode, headers, responseString, throwable);
+                logError("Failed getting config", throwable, true);
             }
         });
 
-        }
+    }
 
+    //handle errors, log and alert user
+    private void logError(String message, Throwable error, boolean alertUSer){
+
+        Log.e(TAG, message, error);
+        if (alertUSer){
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        }
     }
 }
