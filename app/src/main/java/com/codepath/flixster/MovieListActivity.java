@@ -5,11 +5,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.codepath.flixster.models.Movie;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -21,8 +26,8 @@ public class MovieListActivity extends AppCompatActivity {
     //parameter name for API
     public final static String API_KEY_PARAM = "api_key";
 
-    //api key
-    public final static String API_KEY_= "a07e22bc18f5cb106bfe4cc1f83ad8ed";
+//    //api key -- TODO move to a secure loc
+//    public final static String API_KEY_= "a07e22bc18f5cb106bfe4cc1f83ad8ed";
 
     //tag
     public final static String TAG = "MovieListActivity";
@@ -30,12 +35,65 @@ public class MovieListActivity extends AppCompatActivity {
     //assistant fields
     AsyncHttpClient client;
 
+    //base url
+    String imageBaseURL;
+
+    //poster size to use
+    String posterSize;
+
+    //list of currently playing movies
+    ArrayList<Movie> movies;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_list);
         //initialise the client
         client = new AsyncHttpClient();
+
+        movies = new ArrayList<>();
+        getConfiguration();
+
+    }
+
+    //get the list of movies from API
+    private void getNowPlaying(){
+        String url = API_BASE_URL + "/movie/now_playing";
+
+        //req parameters
+        RequestParams params = new RequestParams();
+        params.put(API_KEY_PARAM, getString(R.string.api_key));
+
+        //execute GET request
+        client.get(url, params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                // load the results into movies list
+                try {
+                    JSONArray results = response.getJSONArray("results");
+                    //iterate through results
+
+                    for (int i =0; i< results.length();i++){
+                        Movie movie = new Movie(results.getJSONObject(i));
+                        movies.add(movie);
+                    }
+                    Log.i(TAG, String.format("Loaded %s movies",results.length()));
+                } catch (JSONException e) {
+//                    e.printStackTrace();
+                    logError("Failed to parse now playing movies", e, true);
+                }
+
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                logError("Failed to get data from now playing", throwable, true);
+            }
+        });
+
+
     }
 
     //get config from the API
@@ -44,12 +102,29 @@ public class MovieListActivity extends AppCompatActivity {
 
         //req parameters
         RequestParams params = new RequestParams();
-        params.put(API_KEY_PARAM, API_KEY_);
+        params.put(API_KEY_PARAM, getString(R.string.api_key));
 
         client.get(url,params,new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
+                //get image base url
+                try {
+                    JSONObject images = response.getJSONObject("images");
+                    imageBaseURL = images.getString("secure_base_url");
+                    JSONArray posterSizeOpetions = images.getJSONArray("poster_sizes");
+                    posterSize = posterSizeOpetions.optString(3, "w342");
+
+                    Log.i(TAG, String.format("Loaded congif with imageBaseUrl %s and posterSize %s", imageBaseURL,posterSize));
+
+
+                    //get the movies list
+                    getNowPlaying();
+
+                } catch (JSONException e) {
+//                    e.printStackTrace();
+                    logError("Failed while parsing config",e, true);
+                }
+
             }
 
             @Override
