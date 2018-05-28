@@ -28,7 +28,7 @@ public class MovieListActivity extends AppCompatActivity {
     //parameter name for API
     public final static String API_KEY_PARAM = "api_key";
 
-//    //api key -- TODO move to a secure loc
+//    api key -- TODO move to a secure loc
 //    public final static String API_KEY_= "a07e22bc18f5cb106bfe4cc1f83ad8ed";
 
     //tag
