@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.codepath.flixster.models.Config;
 import com.codepath.flixster.models.Movie;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -37,16 +38,16 @@ public class MovieListActivity extends AppCompatActivity {
     //assistant fields
     AsyncHttpClient client;
 
-    //base url
-    String imageBaseURL;
 
-    //poster size to use
-    String posterSize;
 
     //list of currently playing movies
     ArrayList<Movie> movies;
     RecyclerView rvMovies;
     MovieAdapter adapter;
+
+    //image config
+    Config config;
+
 
 
 
@@ -56,7 +57,6 @@ public class MovieListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_list);
         //initialise the client
         client = new AsyncHttpClient();
-
         movies = new ArrayList<>();
 
         //initialise the adapter (cannot be reinitialised)
@@ -96,6 +96,7 @@ public class MovieListActivity extends AppCompatActivity {
 
                     }
                     Log.i(TAG, String.format("Loaded %s movies",results.length()));
+                    System.out.println("working????? hmmm " + results.length());
                 } catch (JSONException e) {
 //                    e.printStackTrace();
                     logError("Failed to parse now playing movies", e, true);
@@ -126,14 +127,12 @@ public class MovieListActivity extends AppCompatActivity {
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 //get image base url
                 try {
-                    JSONObject images = response.getJSONObject("images");
-                    imageBaseURL = images.getString("secure_base_url");
-                    JSONArray posterSizeOpetions = images.getJSONArray("poster_sizes");
-                    posterSize = posterSizeOpetions.optString(3, "w342");
 
-                    Log.i(TAG, String.format("Loaded congif with imageBaseUrl %s and posterSize %s", imageBaseURL,posterSize));
+                    config = new Config(response);
 
+                    Log.i(TAG, String.format("Loaded config with imageBaseUrl %s and posterSize %s", config.getImageBaseURL(),config.getPosterSize()));
 
+                    adapter.setConfig(config);
                     //get the movies list
                     getNowPlaying();
 
@@ -156,7 +155,7 @@ public class MovieListActivity extends AppCompatActivity {
     //handle errors, log and alert user
     private void logError(String message, Throwable error, boolean alertUSer){
 
-        Log.e(TAG, message, error);
+        Log.e(TAG, "ooooooook"+ message, error);
         if (alertUSer){
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
         }

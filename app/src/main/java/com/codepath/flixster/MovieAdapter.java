@@ -9,30 +9,39 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.codepath.flixster.models.Config;
 import com.codepath.flixster.models.Movie;
 
 import java.util.ArrayList;
 
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
     //list of movies
     ArrayList<Movie> movies;
+    Config config;
+    Context context;
 
     //initialised with array list of movies
     public MovieAdapter(ArrayList<Movie> movies) {
         this.movies = movies;
+        System.out.println("working????? + movies" + movies);
     }
 
-    @NonNull
+    public void setConfig(Config config) {
+        this.config = config;
+    }
 
     //creates and inflates a new view
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        LayoutInflater infalter = LayoutInflater.from(context);
+        context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
 
-        View moviewView = infalter.inflate(R.layout.item_movie, parent, false);
+        View movieView = inflater.inflate(R.layout.item_movie, parent, false);
 
-        return new ViewHolder(moviewView);
+        return new ViewHolder(movieView);
     }
 
     //binds an inflated view to a new item
@@ -45,11 +54,22 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
 
         System.out.println("working?????");
         //TODO set image using Glide
+        String imageUrl = config.getImageUrl(config.getPosterSize(),movie.getPosterPath());
+        //load image using glide
+        Glide.with(context)
+                .load(imageUrl)
+                .bitmapTransform(new RoundedCornersTransformation(context,25,0))
+                .placeholder(R.drawable.flicks_movie_placeholder)
+                .error(R.drawable.flicks_movie_placeholder)
+                .into(holder.ivPosterImage);
+
+
 
     }
 
     @Override
     public int getItemCount() {
+        System.out.println("working?????" + movies.size());
         return movies.size();
     }
 
